@@ -1,18 +1,14 @@
-# elasticsearch-repository-oss
-
-
-要备份你的集群，你可以使用 `snapshot` API。这个会拿到你集群里当前的状态和数据然后保存到一个共享仓库里。这个备份过程是"智能"的。你的第一个快照会是一个数据的完整拷贝，但是所有后续的快照会保留的是已存快照和新数据之间的差异。随着你不时的对数据进行快照，备份也在增量的添加和删除。这意味着后续备份会相当快速，因为它们只传输很小的数据量。
-
-* [OSS快照迁移文档](https://github.com/zhichen/elasticsearch-repository-oss/wiki/OSS快照迁移)
+# elasticsearch-repository-ufile
+转载和修改来源【https://github.com/anjia0532/elasticsearch-repository-oss】
 
 
 ## 创建仓库
 ```
 PUT _snapshot/my_backup 
 {
-    "type": "oss",
+    "type": "ufile",
     "settings": {
-        "endpoint": "http://oss-cn-hangzhou-internal.aliyuncs.com", <1>
+        "endpoint": "http://ufile-cn-hangzhou-internal.aliyuncs.com", <1>
         "access_key_id": "xxxx", 
         "secret_access_key": "xxxxxx", 
         "bucket": "xxxxxx", <2>
@@ -31,9 +27,9 @@ PUT _snapshot/my_backup
 ```
 POST _snapshot/my_backup/ <1>
 {
-    "type": "oss",
+    "type": "ufile",
     "settings": {
-        "endpoint": "http://oss-cn-hangzhou-internal.aliyuncs.com", 
+        "endpoint": "http://ufile-cn-hangzhou-internal.aliyuncs.com", 
         "access_key_id": "xxxx", 
         "secret_access_key": "xxxxxx", 
         "bucket": "xxxxxx", 
