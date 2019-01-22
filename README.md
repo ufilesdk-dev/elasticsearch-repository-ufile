@@ -8,38 +8,22 @@ PUT _snapshot/my_backup
 {
     "type": "ufile",
     "settings": {
-        "endpoint": "http://ufile-cn-hangzhou-internal.aliyuncs.com", <1>
+        "endpoint": "test1000.cn-bj.ufileos.com", <1>
         "access_key_id": "xxxx", 
         "secret_access_key": "xxxxxx", 
-        "bucket": "xxxxxx", <2>
-        "compress": true
+        "bucket": "test1000", <2>
+        "compress": true,     <3>
+        "chunk_size": "100mb", <4>
+        "base_path": "my_bak" <5>
     }
 }
 ```
-* <1> 本处的OSS, 要求和你的elasticsearch集群在同一个region中, 这里的endpoint填的是这个region对应的内网地址 ,具体参考 https://help.aliyun.com/document_detail/31837.html?spm=5176.doc31922.6.577.YxqZYt 中`ECS访问的内网Endpoint`一栏
-* <2> 需要一个已经存在的OSS bucket
+* <1> 填写你再ufile 的bucket 域名
+* <2> 填写你再ufile 的bucket 域名
+* <3> 备份是否先进行压缩，再上传
+* <4> 上传的文件进行分片的大小，对于elasticsearch 本地文件如果大于chunk_size, 会进行分片上传到ufile；默认为64M
+* <5> 可选备份放置的 bucket 的路径。默认为根路径。
 
-
-
-
-假设我们上传的数据非常大, 我们可以限制snapshot过程中分块的大小,超过这个大小，数据将会被分块上传到OSS中
-
-```
-POST _snapshot/my_backup/ <1>
-{
-    "type": "ufile",
-    "settings": {
-        "endpoint": "http://ufile-cn-hangzhou-internal.aliyuncs.com", 
-        "access_key_id": "xxxx", 
-        "secret_access_key": "xxxxxx", 
-        "bucket": "xxxxxx", 
-        "chunk_size": "500mb",
-        "base_path": "snapshot/" <2>
-    }
-}
-```
-* <1> 注意我们用的是 `POST` 而不是 `PUT` 。这会更新已有仓库的设置。
-* <2> base_path 设置仓库的起始位置默认为根目录
 
 ## 列出仓库信息
 ```
@@ -48,7 +32,7 @@ GET _snapshot
 * 也可以使用 `GET _snapshot/my_backup` 获取指定仓库的信息
 
 ### 备份快照迁移
-如果需要将快照迁移到另一个集群.只需要备份到OSS, 然后再在新的集群上注册一个快照仓库(相同的OSS),设置`base_path`的位置为备份文件所在的地方，然后执行恢复备份的命令即可。
+如果需要将快照迁移到另一个集群.只需要备份到Ufile, 然后再在新的集群上注册一个快照仓库(相同的Ufile),设置`base_path`的位置为备份文件所在的地方，然后执行恢复备份的命令即可。
 
 ### 快照所有打开的索引 （以下内容和官方一致）
 
@@ -381,6 +365,55 @@ DELETE /restored_index_3
 
 
 
+## 快速命令查询
+创建备份仓库：
+```
+curl -XPUT localhost:9200/_snapshot/my_backup -H 'Content-type':'application/json' -d'{"type": "ufile","settings": {"endpoint": "test1000.ufile.cn-north-04.ucloud.cn","access_key_id": "public_key","secret_access_key": "private_key","bucket": "test1000", "compress": false, "chunk_size":"100mb", "base_path": "a"}}'
+```
+
+//查询备份仓库信息
+```
+curl -XGET 'http://localhost:9200/_snapshot/my_backup/'
+```
+
+查看已经创建的备份仓库：
+```
+curl -XGET localhost:9200/_snapshot/?pretty
+```
+
+创建一个快照：
+```
+curl -XPUT http://localhost:9200/_snapshot/my_backup/test2
+```
+
+查询一个快照：
+```
+curl -XGET localhost:9200/_snapshot/my_backup/test2?pretty
+```
+
+恢复一个快照：
+```
+curl -XPOST http://localhost:9200/_snapshot/my_backup/test2/_restore
+```
+
+删除一个快照：
+```
+curl -XDELETE localhost:9200/_snapshot/my_backup/test2
+```
 
 
+创建索引：
+```
+curl -XPUT 'localhost:9200/customer?pretty'
+```
+
+删除本地的索引（用来测试恢复）,索引的名称为test1
+```
+curl -XDELETE localhost:9200/test1
+```
+
+查看本地索引列表：
+```
+curl 'localhost:9200/_cat/indices?v'
+```
 
