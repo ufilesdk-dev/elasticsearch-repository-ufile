@@ -1,6 +1,11 @@
 # elasticsearch-repository-ufile
-转载和修改来源【https://github.com/anjia0532/elasticsearch-repository-oss】
+感谢版本修改来源【https://github.com/anjia0532/elasticsearch-repository-oss】
 
+
+## 安装插件
+安装方法：
+* 1、把 elasticsearch-repository-ufile-release 目录拷贝到 /usr/share/elasticsearch/plugins （指安装es 的路径的plugins 目录）；
+* 2、重启 elasticsearch
 
 ## 创建仓库
 ```
