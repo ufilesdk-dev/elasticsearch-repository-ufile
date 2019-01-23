@@ -7,9 +7,6 @@
 * 1、把 elasticsearch-repository-ufile-release 目录拷贝到 /usr/share/elasticsearch/plugins （指安装es 的路径的plugins 目录）；
 * 2、重启 elasticsearch
 
-安装方法二： 使用ES 的工具进行安装：
-* 1、bin/elasticsearch-plugin install https://github.com/ufilesdk-dev/elasticsearch-repository-ufile/raw/master/elasticsearch-repository-ufile-release.zip
-
 ## 创建仓库
 ```
 PUT _snapshot/my_backup 
