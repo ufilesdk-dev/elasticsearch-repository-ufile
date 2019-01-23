@@ -61,7 +61,7 @@ public class UfileServiceImpl extends AbstractComponent implements UfileService 
             logger.trace("UfileServiceImpl.doesObjectExist, bucket:[{}], key:[{}]", bucketName, key);
             ObjectProfile response = this.client.objectProfile(key, bucketName).execute();
         }catch(UfileServerException e){
-            logger.error("UfileServiceImpl.doesObjectExist: [{}]", e.toString());
+            //logger.error("UfileServiceImpl.doesObjectExist: [{}]", e.toString());
             return false;   //TODO, 判断异常码
         }
         return true;
@@ -89,7 +89,7 @@ public class UfileServiceImpl extends AbstractComponent implements UfileService 
 
     //列表文件
     @Override public ObjectListBean listObjects(String bucketName, String prefix, String marker)  throws UfileServerException, UfileClientException{
-        logger.trace("UfileServiceImpl.listObjects, bucket:[{}], prefix:[{}], marker:[{}]", bucketName, prefix, marker);
+        logger.error("UfileServiceImpl.listObjects, bucket:[{}], prefix:[{}], marker:[{}]", bucketName, prefix, marker);
         return this.client.objectList(bucketName)
                 .withPrefix(prefix)
                 .withMarker(marker)
@@ -99,7 +99,7 @@ public class UfileServiceImpl extends AbstractComponent implements UfileService 
 
     //下载文件
     @Override public DownloadStreamBean getObject(String bucketName, String key) throws UfileServerException,UfileClientException {
-        logger.trace("UfileServiceImpl.getObject, bucket:[{}], key:[{}]", bucketName, key);
+        logger.error("UfileServiceImpl.getObject, bucket:[{}], key:[{}]", bucketName, key);
         String url = this.client.getDownloadUrlFromPrivateBucket(key, bucketName,30*60)
                 .createUrl();
         DownloadStreamBean down_bean = this.client.getStream(url).execute();
@@ -109,11 +109,11 @@ public class UfileServiceImpl extends AbstractComponent implements UfileService 
 
     //上传文件
     @Override public void putObject(String bucketName, String key, InputStream input, long blobSize) throws UfileServerException, UfileClientException {
-        logger.trace("UfileServiceImpl.putObject, bucket:[{}], key:[{}], size:[{}]", bucketName, key, blobSize);
+        logger.error("UfileServiceImpl.putObject, bucket:[{}], key:[{}], size:[{}]", bucketName, key, blobSize);
 
         //String mineType = MimeTypeUtil.getMimeType(new File(key));
         String mimeType = "application/octet-stream";
-        if(blobSize<102400000) { //100M以内小文件用put
+        if(blobSize<10240000) { //10M以内小文件用put
             this.client.putObject(input, mimeType).nameAs(key).toBucket(bucketName).execute();
             return;
         }
@@ -132,7 +132,7 @@ public class UfileServiceImpl extends AbstractComponent implements UfileService 
             logger.error("UfileServiceImpl.abortMultiUpload");
             this.client.abortMultiUpload(upload_info).execute();
         }else {
-            logger.error("UfileServiceImpl.finishMultiUpload");
+            logger.trace("UfileServiceImpl.finishMultiUpload");
             this.client.finishMultiUpload(upload_info, partStates).execute();
         }
         return ;
@@ -157,7 +157,7 @@ public class UfileServiceImpl extends AbstractComponent implements UfileService 
                 while (uploadCount < 3) {
                     try {
                         MultiUploadPartState part_state = this.client
-                                .multiUploadPart(upload_info, buffer, index)
+                                .multiUploadPart(upload_info, sendData, index)
                                 .setOnProgressListener(null)
                                 .execute();
                         if (part_state == null) {
@@ -187,13 +187,13 @@ public class UfileServiceImpl extends AbstractComponent implements UfileService 
 
     //删除文件
     @Override public void deleteObject(String bucketName, String key) throws UfileServerException, UfileClientException {
-        logger.trace("UfileServiceImpl.deleteObject, bucket:[{}], key:[{}]", bucketName, key);
+        logger.error("UfileServiceImpl.deleteObject, bucket:[{}], key:[{}]", bucketName, key);
         this.client.deleteObject(key, bucketName).execute();
     }
 
     //复制文件，TODO
     @Override public void copyObject(String sourceBucketName, String sourceKey, String destinationBucketName, String destinationKey) throws UfileServerException, UfileClientException {
-        logger.trace("UfileServiceImpl.copyObject, src_bucket:[{}], src_key:[{}], dst_bucket:[{}], dst_key:[{}]", sourceBucketName, sourceKey, destinationBucketName, destinationKey);
+        logger.error("UfileServiceImpl.copyObject, src_bucket:[{}], src_key:[{}], dst_bucket:[{}], dst_key:[{}]", sourceBucketName, sourceKey, destinationBucketName, destinationKey);
 
         String url = this.client.getDownloadUrlFromPrivateBucket(sourceKey, sourceBucketName,30*60)
                 .createUrl();

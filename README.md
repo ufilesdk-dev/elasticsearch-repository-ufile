@@ -400,11 +400,13 @@ curl -XPOST http://localhost:9200/_snapshot/my_backup/test2/_restore
 ```
 curl -XDELETE localhost:9200/_snapshot/my_backup/test2
 ```
->
->
->
->
->
+
+
+
+
+
+
+
 
 创建索引：
 ```

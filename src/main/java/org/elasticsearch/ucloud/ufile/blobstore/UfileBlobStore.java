@@ -105,7 +105,7 @@ public class UfileBlobStore extends AbstractComponent implements BlobStore {
         return doPrivileged(() -> {
             try{
                 boolean r = this.client.doesObjectExist(bucket, blobName);
-                logger.error("UfileBlobStore.blobExists, exist: [{}]", r);
+                logger.trace("UfileBlobStore.blobExists, exist: [{}]", r);
                 return r;
             } catch (UfileClientException e) {
                 logger.error("UfileBlobStore.blobExists.UfileClientException: [{}]", e.getMessage());
@@ -140,14 +140,14 @@ public class UfileBlobStore extends AbstractComponent implements BlobStore {
                 byte[] buf = new byte[(int)(blobSize)];
                 try {
                         int read = inputStream.read(buf);
-                        logger.error("eread:[{}], rread[{}]", blobSize, read);
+                        logger.trace("eread:[{}], rread[{}]", blobSize, read);
                 }catch (Exception e2){
                     logger.error("ex: [{}]", e2.getMessage());
                     throw e2;
                 }
 
                 InputStream inputStream2 = new ByteArrayInputStream(buf);
-                logger.error("writeBlob inputStrem size:[{}]", inputStream2.available());
+                logger.trace("writeBlob inputStrem size:[{}]", inputStream2.available());
                 this.client.putObject(bucket, blobName, inputStream2, blobSize);
             } catch (UfileClientException e) {
                 logger.error("UfileBlobStore.writeBlob.UfileClientException: [{}]", e.getMessage());
