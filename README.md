@@ -2,10 +2,11 @@
 感谢版本修改来源【https://github.com/anjia0532/elasticsearch-repository-oss】
 
 
-## 安装插件
-安装方法一： 目录安装
+## 安装插件: 目录安装
 * 1、把 elasticsearch-repository-ufile-release 目录拷贝到 /usr/share/elasticsearch/plugins （指安装es 的路径的plugins 目录）；
-* 2、重启 elasticsearch
+* 2、修改 plugin-descriptor.properties 里面的 5.5.3 到ES 实际的版本号；
+* 3、重启 elasticsearch，观察/var/log/elasticsearch/elasticsearch.log, 看是否正常启动
+* 4、完成
 
 ## 创建仓库
 ```
