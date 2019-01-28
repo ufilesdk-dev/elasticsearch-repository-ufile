@@ -25,7 +25,7 @@ PUT _snapshot/my_backup
 }
 ```
 * <1> 填写你再ufile 的bucket 域名
-* <2> 填写你再ufile 的bucket 域名
+* <2> 填写你再ufile 的bucket 名
 * <3> 备份是否对索引做压缩，再上传；对数据容量影响不大
 * <4> 上传的文件进行分片的大小，对于elasticsearch 本地文件如果大于chunk_size, 会进行分片上传到ufile；默认为64M
 * <5> 可选备份放置的 bucket 的路径。默认为根路径。
