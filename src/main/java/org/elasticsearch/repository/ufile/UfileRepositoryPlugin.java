@@ -4,6 +4,7 @@ import org.elasticsearch.SpecialPermission;
 import org.elasticsearch.cluster.metadata.RepositoryMetaData;
 import org.elasticsearch.common.settings.Setting;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.xcontent.NamedXContentRegistry;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.plugins.RepositoryPlugin;
@@ -31,9 +32,9 @@ public class UfileRepositoryPlugin extends Plugin implements RepositoryPlugin {
     }
 
     @Override
-    public Map<String, Repository.Factory> getRepositories(Environment env) {
+    public Map<String, Repository.Factory> getRepositories(Environment env, NamedXContentRegistry namedXContentRegistry) {
         return Collections.singletonMap(UfileRepository.TYPE,
-                (metadata) -> new UfileRepository(metadata, env, createStorageService(env.settings(), metadata)));
+                (metadata) -> new UfileRepository(metadata, env, namedXContentRegistry, createStorageService(env.settings(), metadata)));
     }
 
     @Override

@@ -5,6 +5,7 @@ import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.blobstore.BlobPath;
 import org.elasticsearch.common.blobstore.BlobStore;
 import org.elasticsearch.common.unit.ByteSizeValue;
+import org.elasticsearch.common.xcontent.NamedXContentRegistry;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.repositories.blobstore.BlobStoreRepository;
 
@@ -20,8 +21,8 @@ public class UfileRepository extends BlobStoreRepository {
     private final ByteSizeValue chunkSize;
 
     public UfileRepository(RepositoryMetaData metadata, Environment env,
-                            UfileService ufileService) {
-        super(metadata, env.settings());
+                           NamedXContentRegistry namedXContentRegistry, UfileService ufileService) {
+        super(metadata, env.settings(), namedXContentRegistry);
 
         String bucket = UfileClientSettings.BUCKET.get(metadata.settings());
 
