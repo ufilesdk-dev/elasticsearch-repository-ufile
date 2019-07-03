@@ -4,28 +4,30 @@ import org.elasticsearch.cluster.metadata.RepositoryMetaData;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.blobstore.BlobPath;
 import org.elasticsearch.common.blobstore.BlobStore;
+import org.elasticsearch.common.settings.Setting;
 import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.xcontent.NamedXContentRegistry;
 import org.elasticsearch.env.Environment;
+import org.elasticsearch.repositories.RepositoryException;
 import org.elasticsearch.repositories.blobstore.BlobStoreRepository;
 
 import java.io.File;
 
 
 public class UfileRepository extends BlobStoreRepository {
-    static final String TYPE = "ufile";
-
-    private final UfileBlobStore blobStore;
+    public static final String TYPE = "ufile";
     private final BlobPath basePath;
     private final boolean compress;
     private final ByteSizeValue chunkSize;
+    private final String bucket;
+    private final UfileService service;
+
 
     public UfileRepository(RepositoryMetaData metadata, Environment env,
-                           NamedXContentRegistry namedXContentRegistry, UfileService ufileService) {
+                           NamedXContentRegistry namedXContentRegistry, UfileService service) {
         super(metadata, env.settings(), namedXContentRegistry);
-
-        String bucket = UfileClientSettings.BUCKET.get(metadata.settings());
-
+        this.service = service;
+        this.bucket = getSetting(UfileClientSettings.BUCKET, metadata);
         String basePath = UfileClientSettings.BASE_PATH.get(metadata.settings());
         if (Strings.hasLength(basePath)) {
             BlobPath path = new BlobPath();
@@ -36,21 +38,30 @@ public class UfileRepository extends BlobStoreRepository {
         } else {
             this.basePath = BlobPath.cleanPath();
         }
-        this.compress = UfileClientSettings.COMPRESS.get(metadata.settings());
-        this.chunkSize = UfileClientSettings.CHUNK_SIZE.get(metadata.settings());
-        logger.debug("using bucket [{}], base_path [{}], chunk_size [{}], compress [{}]", bucket,
+        this.compress = getSetting(UfileClientSettings.COMPRESS, metadata);
+        this.chunkSize = getSetting(UfileClientSettings.CHUNK_SIZE, metadata);
+        logger.debug("using bucket [{}], base_path [{}], chunk_size [{}], compress [{}]", this.bucket,
                 basePath, chunkSize, compress);
-        blobStore = new UfileBlobStore(env.settings(), bucket, ufileService);
+    }
+
+    @Override
+    protected UfileBlobStore createBlobStore() {
+        return new UfileBlobStore(settings, bucket, service);
     }
 
     @Override
     protected BlobStore blobStore() {
-        return this.blobStore;
+        return super.blobStore();
+    }
+
+    @Override
+    protected BlobStore getBlobStore() {
+        return super.getBlobStore();
     }
 
     @Override
     protected BlobPath basePath() {
-        return this.basePath;
+        return basePath;
     }
 
     @Override
@@ -58,10 +69,21 @@ public class UfileRepository extends BlobStoreRepository {
         return compress;
     }
 
-
     @Override
     protected ByteSizeValue chunkSize() {
         return chunkSize;
     }
 
+    public static <T> T getSetting(Setting<T> setting, RepositoryMetaData metadata) {
+        T value = setting.get(metadata.settings());
+        if (value == null) {
+            throw new RepositoryException(metadata.name(),
+                    "Setting [" + setting.getKey() + "] is not defined for repository");
+        }
+        if ((value instanceof String) && (Strings.hasText((String) value)) == false) {
+            throw new RepositoryException(metadata.name(),
+                    "Setting [" + setting.getKey() + "] is empty for repository");
+        }
+        return value;
+    }
 }

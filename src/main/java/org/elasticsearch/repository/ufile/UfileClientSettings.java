@@ -18,7 +18,7 @@ public class UfileClientSettings {
     public static final Setting<String> ENDPOINT =
             Setting.simpleString("endpoint", Property.NodeScope, Property.Dynamic);
 
-//    public static final Setting<String> SECURITY_TOKEN = Setting
+    //    public static final Setting<String> SECURITY_TOKEN = Setting
 //            .simpleString("security_token", Setting.Property.NodeScope, Setting.Property.Dynamic);
     public static final Setting<String> BUCKET =
             simpleString("bucket", Property.NodeScope, Property.Dynamic);

@@ -10,7 +10,8 @@ import java.security.PrivilegedExceptionAction;
 
 final class SocketAccess {
 
-    private SocketAccess() {}
+    private SocketAccess() {
+    }
 
     public static <T> T doPrivileged(PrivilegedAction<T> operation) {
         SpecialPermission.check();

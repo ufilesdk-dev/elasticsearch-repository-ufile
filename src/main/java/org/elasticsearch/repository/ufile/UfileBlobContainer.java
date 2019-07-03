@@ -10,7 +10,6 @@ import org.elasticsearch.common.logging.Loggers;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.NoSuchFileException;
 import java.util.Map;
 
@@ -62,26 +61,8 @@ public class UfileBlobContainer extends AbstractBlobContainer {
         return blobStore.readBlob(buildKey(blobName));
     }
 
-
-    /**
-     * Reads blob content from the input stream and writes it to the container in a new blob with the given name.
-     * This method assumes the container does not already contain a blob of the same blobName.  If a blob by the
-     * same name already exists, the operation will fail and an {@link IOException} will be thrown.
-     *
-     * @param blobName    The name of the blob to write the contents of the input stream to.
-     * @param inputStream The input stream from which to retrieve the bytes to write to the blob.
-     * @param blobSize    The size of the blob to be written, in bytes.  It is implementation dependent whether
-     *                    this value is used in writing the blob to the repository.
-     * @throws FileAlreadyExistsException if a blob by the same name already exists
-     * @throws IOException                if the input stream could not be read, or the target blob could not be written to.
-     */
     @Override
-    public void writeBlob(String blobName, InputStream inputStream, long blobSize)
-            throws IOException {
-        if (blobExists(blobName)) {
-            throw new FileAlreadyExistsException(
-                    "blob [" + blobName + "] already exists, cannot overwrite");
-        }
+    public void writeBlob(String blobName, InputStream inputStream, long blobSize, boolean failIfAlreadyExists) throws IOException {
         logger.debug("writeBlob({}, stream, {})", blobName, blobSize);
         blobStore.writeBlob(buildKey(blobName), inputStream, blobSize);
     }
@@ -141,24 +122,6 @@ public class UfileBlobContainer extends AbstractBlobContainer {
             throw new IOException(e);
         }
     }
-
-    @Override
-    public void move(String sourceBlobName, String targetBlobName) throws IOException {
-        logger.debug("move({}, {})", sourceBlobName, targetBlobName);
-        if (!blobExists(sourceBlobName)) {
-            throw new IOException("Blob [" + sourceBlobName + "] does not exist");
-        } else if (blobExists(targetBlobName)) {
-            throw new IOException("Blob [" + targetBlobName + "] has already exist");
-        }
-        try {
-            blobStore.move(buildKey(sourceBlobName), buildKey(targetBlobName));
-        } catch (Exception e) {
-            logger.error("can not move blob [{}] to [{}] in bucket {{}}: {}", sourceBlobName,
-                    targetBlobName, blobStore.getBucket(), e.getMessage());
-            throw new IOException("move blob failed");
-        }
-    }
-
 
     protected String buildKey(String blobName) {
         return keyPath + (blobName == null ? StringUtils.EMPTY : blobName);
