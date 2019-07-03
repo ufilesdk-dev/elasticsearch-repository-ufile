@@ -1,7 +1,5 @@
-package org.elasticsearch.ucloud.ufile.blobstore;
+package org.elasticsearch.repository.ufile;
 
-import cn.ucloud.ufile.exception.UfileClientException;
-import cn.ucloud.ufile.exception.UfileServerException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.common.blobstore.BlobMetaData;
@@ -16,16 +14,13 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.NoSuchFileException;
 import java.util.Map;
 
-/**
- * A class for managing a Ufile repository of blob entries, where each blob entry is just a named group of bytes
- * Created by yangkongshi on 2017/11/24. modify by delex 20190102
- */
-public class UfileBlobContainer extends AbstractBlobContainer {
-    protected final Logger logger = Loggers.getLogger(UfileBlobContainer.class);
-    protected final UfileBlobStore blobStore;
-    protected final String keyPath;
 
-    public UfileBlobContainer(BlobPath path, UfileBlobStore blobStore) {
+public class UfileBlobContainer extends AbstractBlobContainer {
+    private final Logger logger = Loggers.getLogger(UfileBlobContainer.class);
+    private final UfileBlobStore blobStore;
+    private final String keyPath;
+
+    UfileBlobContainer(BlobPath path, UfileBlobStore blobStore) {
         super(path);
         this.keyPath = path.buildAsString();
         this.blobStore = blobStore;
@@ -37,13 +32,14 @@ public class UfileBlobContainer extends AbstractBlobContainer {
      * @param blobName The name of the blob whose existence is to be determined.
      * @return {@code true} if a blob exists in the BlobContainer with the given name, and {@code false} otherwise.
      */
-    @Override public boolean blobExists(String blobName) {
-        logger.trace("blobExists({})", blobName);
+    @Override
+    public boolean blobExists(String blobName) {
+        logger.debug("blobExists({})", blobName);
         try {
             return blobStore.blobExists(buildKey(blobName));
         } catch (Exception e) {
-            logger.warn("can not access [{}] in bucket {{}}: {}", blobName, blobStore.getBucket(),
-                e.getMessage());
+            logger.error("can not access [{}] in bucket {{}}: {}", blobName, blobStore.getBucket(),
+                    e.getMessage());
             throw new BlobStoreException("Failed to check if blob [" + blobName + "] exists", e);
         }
     }
@@ -56,8 +52,9 @@ public class UfileBlobContainer extends AbstractBlobContainer {
      * @throws NoSuchFileException if the blob does not exist
      * @throws IOException         if the blob can not be read.
      */
-    @Override public InputStream readBlob(String blobName) throws IOException {
-        logger.trace("readBlob({})", blobName);
+    @Override
+    public InputStream readBlob(String blobName) throws IOException {
+        logger.debug("readBlob({})", blobName);
         if (!blobExists(blobName)) {
             throw new NoSuchFileException("[" + blobName + "] blob not found");
         }
@@ -78,16 +75,16 @@ public class UfileBlobContainer extends AbstractBlobContainer {
      * @throws FileAlreadyExistsException if a blob by the same name already exists
      * @throws IOException                if the input stream could not be read, or the target blob could not be written to.
      */
-    @Override public void writeBlob(String blobName, InputStream inputStream, long blobSize)
-        throws IOException {
+    @Override
+    public void writeBlob(String blobName, InputStream inputStream, long blobSize)
+            throws IOException {
         if (blobExists(blobName)) {
             throw new FileAlreadyExistsException(
-                "blob [" + blobName + "] already exists, cannot overwrite");
+                    "blob [" + blobName + "] already exists, cannot overwrite");
         }
-        logger.trace("writeBlob({}, stream, {})", blobName, blobSize);
+        logger.debug("writeBlob({}, stream, {})", blobName, blobSize);
         blobStore.writeBlob(buildKey(blobName), inputStream, blobSize);
     }
-
 
 
     /**
@@ -97,16 +94,17 @@ public class UfileBlobContainer extends AbstractBlobContainer {
      * @throws NoSuchFileException if the blob does not exist
      * @throws IOException         if the blob exists but could not be deleted.
      */
-    @Override public void deleteBlob(String blobName) throws IOException {
-        logger.trace("deleteBlob({})", blobName);
+    @Override
+    public void deleteBlob(String blobName) throws IOException {
+        logger.debug("deleteBlob({})", blobName);
         if (!blobExists(blobName)) {
             throw new NoSuchFileException("Blob [" + blobName + "] does not exist");
         }
         try {
             blobStore.deleteBlob(buildKey(blobName));
         } catch (Exception e) {
-            logger.warn("can not access [{}] in bucket {{}}: {}", blobName, blobStore.getBucket(),
-                e.getMessage());
+            logger.error("can not access [{}] in bucket {{}}: {}", blobName, blobStore.getBucket(),
+                    e.getMessage());
             throw new IOException(e);
         }
 
@@ -119,7 +117,8 @@ public class UfileBlobContainer extends AbstractBlobContainer {
      * the values are {@link BlobMetaData}, containing basic information about each blob.
      * @throws IOException if there were any failures in reading from the blob container.
      */
-    @Override public Map<String, BlobMetaData> listBlobs() throws IOException {
+    @Override
+    public Map<String, BlobMetaData> listBlobs() throws IOException {
         return listBlobsByPrefix(null);
     }
 
@@ -130,20 +129,22 @@ public class UfileBlobContainer extends AbstractBlobContainer {
      * the values are {@link BlobMetaData}, containing basic information about each blob.
      * @throws IOException if there were any failures in reading from the blob container.
      */
-    @Override public Map<String, BlobMetaData> listBlobsByPrefix(String blobNamePrefix)
-        throws IOException {
-        logger.trace("listBlobsByPrefix({})", blobNamePrefix);
+    @Override
+    public Map<String, BlobMetaData> listBlobsByPrefix(String blobNamePrefix)
+            throws IOException {
+        logger.debug("listBlobsByPrefix({})", blobNamePrefix);
         try {
             return blobStore.listBlobsByPrefix(keyPath, blobNamePrefix);
         } catch (IOException e) {
-            logger.warn("can not access [{}] in bucket {{}}: {}", blobNamePrefix,
-                blobStore.getBucket(), e.getMessage());
+            logger.error("can not access [{}] in bucket {{}}: {}", blobNamePrefix,
+                    blobStore.getBucket(), e.getMessage());
             throw new IOException(e);
         }
     }
 
-    @Override public void move(String sourceBlobName, String targetBlobName) throws IOException {
-        logger.trace("move({}, {})", sourceBlobName, targetBlobName);
+    @Override
+    public void move(String sourceBlobName, String targetBlobName) throws IOException {
+        logger.debug("move({}, {})", sourceBlobName, targetBlobName);
         if (!blobExists(sourceBlobName)) {
             throw new IOException("Blob [" + sourceBlobName + "] does not exist");
         } else if (blobExists(targetBlobName)) {
@@ -151,8 +152,8 @@ public class UfileBlobContainer extends AbstractBlobContainer {
         }
         try {
             blobStore.move(buildKey(sourceBlobName), buildKey(targetBlobName));
-        } catch (Exception  e) {
-            logger.warn("can not move blob [{}] to [{}] in bucket {{}}: {}", sourceBlobName,
+        } catch (Exception e) {
+            logger.error("can not move blob [{}] to [{}] in bucket {{}}: {}", sourceBlobName,
                     targetBlobName, blobStore.getBucket(), e.getMessage());
             throw new IOException("move blob failed");
         }

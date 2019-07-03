@@ -1,14 +1,10 @@
-package org.elasticsearch.ucloud.ufile.blobstore;
+package org.elasticsearch.repository.ufile;
 
 import cn.ucloud.ufile.bean.ObjectInfoBean;
 import cn.ucloud.ufile.bean.ObjectListBean;
 import cn.ucloud.ufile.exception.UfileClientException;
 import cn.ucloud.ufile.exception.UfileServerException;
-import cn.ucloud.ufile.util.JLog;
-import cn.ucloud.ufile.util.MimeTypeUtil;
 import org.apache.commons.lang.StringUtils;
-import org.elasticsearch.SpecialPermission;
-import org.elasticsearch.ucloud.ufile.service.UfileService;
 import org.elasticsearch.common.blobstore.*;
 import org.elasticsearch.common.blobstore.support.PlainBlobMetaData;
 import org.elasticsearch.common.collect.MapBuilder;
@@ -16,42 +12,38 @@ import org.elasticsearch.common.component.AbstractComponent;
 import org.elasticsearch.common.settings.Settings;
 
 import java.io.*;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.*;
 
-/**
- * An Ufile blob store for managing Ufile client write and read blob directly
- * Copy and modify from yangkongshi on 2017/11/24.modify by delex 20190102
- */
+
 public class UfileBlobStore extends AbstractComponent implements BlobStore {
 
     private final UfileService client;
     private final String bucket;
 
-    public UfileBlobStore(Settings settings, String bucket, UfileService client) {
+    UfileBlobStore(Settings settings, String bucket, UfileService client) {
         super(settings);
         this.client = client;
         this.bucket = bucket;
         boolean exist = doesBucketExist(bucket);
-        if(!exist){
+        if (!exist) {
             throw new BlobStoreException("Bucket [" + bucket + "] does not exist");
         }
     }
 
-    public String getBucket() {
+    String getBucket() {
         return this.bucket;
     }
 
-    @Override public BlobContainer blobContainer(BlobPath blobPath) {
+    @Override
+    public BlobContainer blobContainer(BlobPath blobPath) {
         return new UfileBlobContainer(blobPath, this);
     }
 
     //按目录删除文件
-    @Override public void delete(BlobPath blobPath) throws IOException {
-        doPrivileged(() -> {
-            logger.trace("delete path: {}", blobPath.buildAsString());
+    @Override
+    public void delete(BlobPath blobPath) throws IOException {
+        SocketAccess.doPrivilegedIOException(() -> {
+            logger.debug("delete path: {}", blobPath.buildAsString());
             Map<String, BlobMetaData> blobs = listBlobsByPrefix(blobPath.buildAsString(), null);
             Iterator<String> blobNameIterator = blobs.keySet().iterator();
             while (blobNameIterator.hasNext()) {
@@ -72,7 +64,7 @@ public class UfileBlobStore extends AbstractComponent implements BlobStore {
     }
 
     Map<String, BlobMetaData> listBlobsByPrefix(String keyPath, String prefix) throws IOException {
-        return doPrivileged(() -> {
+        return SocketAccess.doPrivilegedIOException(() -> {
             MapBuilder<String, BlobMetaData> blobsBuilder = MapBuilder.newMapBuilder();
             String actualPrefix = keyPath + (prefix == null ? StringUtils.EMPTY : prefix);
             String nextMarker = null;
@@ -84,28 +76,29 @@ public class UfileBlobStore extends AbstractComponent implements BlobStore {
                     blobsBuilder.put(blobName, new PlainBlobMetaData(blobName, objInfo.getSize()));
                 }
                 nextMarker = blobs.getNextMarker();
-                logger.trace("bucket [{}], path [{}], prefix [{}], nextMarker [{}] [{}][{}] [{}]", bucket, keyPath, prefix, nextMarker, (nextMarker == ""), (nextMarker == null), nextMarker.length());
+                logger.debug("bucket [{}], path [{}], prefix [{}], nextMarker [{}] [{}][{}] [{}]", bucket, keyPath, prefix, nextMarker, (nextMarker == ""), (nextMarker == null), nextMarker.length());
             } while (nextMarker != null && nextMarker.length() != 0);
             return blobsBuilder.immutableMap();
         });
     }
 
-    @Override public void close() throws IOException {
+    @Override
+    public void close() throws IOException {
         client.shutdown();
     }
 
     //判断bucket 存在性
-    boolean doesBucketExist(String bucketName) {
+    private boolean doesBucketExist(String bucketName) {
         boolean b = this.client.doesBucketExist(bucketName);
         return b;
     }
 
     //对象存在性
     boolean blobExists(String blobName) throws IOException {
-        return doPrivileged(() -> {
-            try{
+        return SocketAccess.doPrivilegedIOException(() -> {
+            try {
                 boolean r = this.client.doesObjectExist(bucket, blobName);
-                logger.trace("UfileBlobStore.blobExists, exist: [{}]", r);
+                logger.debug("UfileBlobStore.blobExists, exist: [{}]", r);
                 return r;
             } catch (UfileClientException e) {
                 logger.error("UfileBlobStore.blobExists.UfileClientException: [{}]", e.getMessage());
@@ -119,8 +112,8 @@ public class UfileBlobStore extends AbstractComponent implements BlobStore {
 
     //读取对象
     InputStream readBlob(String blobName) throws IOException {
-        return doPrivileged(() -> {
-            try{
+        return SocketAccess.doPrivilegedIOException(() -> {
+            try {
                 InputStream ins = this.client.getObject(bucket, blobName).getInputStream();
                 return ins;
             } catch (UfileClientException e) {
@@ -133,21 +126,15 @@ public class UfileBlobStore extends AbstractComponent implements BlobStore {
         });
     }
 
-    //写对象,TODO: support mput
-    void writeBlob(String blobName, InputStream inputStream, long blobSize) throws IOException {
-        doPrivileged(() -> {
-            try{
-                byte[] buf = new byte[(int)(blobSize)];
-                try {
-                        int read = inputStream.read(buf);
-                        logger.trace("eread:[{}], rread[{}]", blobSize, read);
-                }catch (Exception e2){
-                    logger.error("ex: [{}]", e2.getMessage());
-                    throw e2;
-                }
 
+    void writeBlob(String blobName, InputStream inputStream, long blobSize) throws IOException {
+        SocketAccess.doPrivilegedIOException(() -> {
+            try {
+                byte[] buf = new byte[(int) (blobSize)];
+                int read = inputStream.read(buf);
+                logger.debug("writeBlob blobSize:[{}], readSize[{}]", blobSize, read);
                 InputStream inputStream2 = new ByteArrayInputStream(buf);
-                logger.trace("writeBlob inputStrem size:[{}]", inputStream2.available());
+                logger.debug("writeBlob inputStrem size:[{}]", inputStream2.available());
                 this.client.putObject(bucket, blobName, inputStream2, blobSize);
             } catch (UfileClientException e) {
                 logger.error("UfileBlobStore.writeBlob.UfileClientException: [{}]", e.getMessage());
@@ -162,8 +149,8 @@ public class UfileBlobStore extends AbstractComponent implements BlobStore {
 
     //删除对象
     void deleteBlob(String blobName) throws IOException {
-        doPrivileged(() -> {
-            try{
+        SocketAccess.doPrivilegedIOException(() -> {
+            try {
                 this.client.deleteObject(bucket, blobName);
             } catch (UfileClientException e) {
                 logger.error("UfileBlobStore.deleteBlob.UfileClientException: [{}]", e.getMessage());
@@ -177,9 +164,9 @@ public class UfileBlobStore extends AbstractComponent implements BlobStore {
     }
 
     //移动对象
-    public void move(String sourceBlobName, String targetBlobName)throws IOException {
-        doPrivileged(() -> {
-            try{
+    public void move(String sourceBlobName, String targetBlobName) throws IOException {
+        SocketAccess.doPrivilegedIOException(() -> {
+            try {
                 this.client.copyObject(bucket, sourceBlobName, bucket, targetBlobName);
                 this.client.deleteObject(bucket, sourceBlobName);
             } catch (UfileClientException e) {
@@ -193,18 +180,4 @@ public class UfileBlobStore extends AbstractComponent implements BlobStore {
         });
     }
 
-    /**
-     * Executes a {@link PrivilegedExceptionAction} with privileges enabled.
-     */
-    <T> T doPrivileged(PrivilegedExceptionAction<T> operation) throws IOException {
-        SecurityManager sm = System.getSecurityManager();
-        if (sm != null) {
-            sm.checkPermission(new SpecialPermission());
-        }
-        try {
-            return AccessController.doPrivileged((PrivilegedExceptionAction<T>) operation::run);
-        } catch (PrivilegedActionException e) {
-            throw (IOException) e.getException();
-        }
-    }
 }
