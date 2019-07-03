@@ -20,10 +20,7 @@ import java.util.Map;
 public class UfileRepositoryPlugin extends Plugin implements RepositoryPlugin {
 
     static {
-        SecurityManager sm = System.getSecurityManager();
-        if (sm != null) {
-            sm.checkPermission(new SpecialPermission());
-        }
+        SpecialPermission.check();
         AccessController.doPrivileged((PrivilegedAction<Void>) () -> null);
     }
 
