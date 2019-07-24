@@ -26,7 +26,6 @@ public class UfileServiceImpl extends AbstractComponent implements UfileService 
     private ObjectApiBuilder client;
 
     public UfileServiceImpl(Settings settings, RepositoryMetaData metaData) {
-        super(settings);
         this.client = createClient(metaData);
     }
 

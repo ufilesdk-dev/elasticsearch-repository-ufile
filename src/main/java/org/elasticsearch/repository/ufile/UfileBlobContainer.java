@@ -1,12 +1,14 @@
 package org.elasticsearch.repository.ufile;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
+//import org.apache.logging.log4j.Logger;
 import org.elasticsearch.common.blobstore.BlobMetaData;
 import org.elasticsearch.common.blobstore.BlobPath;
 import org.elasticsearch.common.blobstore.BlobStoreException;
 import org.elasticsearch.common.blobstore.support.AbstractBlobContainer;
-import org.elasticsearch.common.logging.Loggers;
+//import org.elasticsearch.common.logging.Loggers;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,7 +17,7 @@ import java.util.Map;
 
 
 public class UfileBlobContainer extends AbstractBlobContainer {
-    private final Logger logger = Loggers.getLogger(UfileBlobContainer.class);
+    private final Logger logger = LogManager.getLogger(UfileBlobContainer.class);
     private final UfileBlobStore blobStore;
     private final String keyPath;
 

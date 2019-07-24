@@ -21,7 +21,7 @@ public class UfileBlobStore extends AbstractComponent implements BlobStore {
     private final String bucket;
 
     UfileBlobStore(Settings settings, String bucket, UfileService client) {
-        super(settings);
+
         this.client = client;
         this.bucket = bucket;
         boolean exist = doesBucketExist(bucket);
