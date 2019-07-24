@@ -9,6 +9,7 @@ import org.elasticsearch.env.Environment;
 import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.plugins.RepositoryPlugin;
 import org.elasticsearch.repositories.Repository;
+import org.elasticsearch.threadpool.ThreadPool;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -29,9 +30,9 @@ public class UfileRepositoryPlugin extends Plugin implements RepositoryPlugin {
     }
 
     @Override
-    public Map<String, Repository.Factory> getRepositories(Environment env, NamedXContentRegistry namedXContentRegistry) {
+    public Map<String, Repository.Factory> getRepositories(Environment env, NamedXContentRegistry namedXContentRegistry,final ThreadPool threadPool) {
         return Collections.singletonMap(UfileRepository.TYPE,
-                (metadata) -> new UfileRepository(metadata, env, namedXContentRegistry, createStorageService(env.settings(), metadata)));
+                (metadata) -> new UfileRepository(metadata, env, namedXContentRegistry, createStorageService(env.settings(), metadata), threadPool));
     }
 
     @Override

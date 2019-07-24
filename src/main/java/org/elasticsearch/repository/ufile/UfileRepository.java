@@ -14,6 +14,7 @@ import org.elasticsearch.common.xcontent.NamedXContentRegistry;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.repositories.RepositoryException;
 import org.elasticsearch.repositories.blobstore.BlobStoreRepository;
+import org.elasticsearch.threadpool.ThreadPool;
 
 import java.io.File;
 
@@ -32,9 +33,16 @@ public class UfileRepository extends BlobStoreRepository {
     private final Settings settings;
 
 
-    public UfileRepository(RepositoryMetaData metadata, Environment env,
-                           NamedXContentRegistry namedXContentRegistry, UfileService service) {
-        super(metadata, env.settings(), getSetting(UfileClientSettings.COMPRESS, metadata), namedXContentRegistry);
+    public UfileRepository(RepositoryMetaData metadata,
+                           Environment env,
+                           NamedXContentRegistry namedXContentRegistry,
+                           UfileService service,
+                           final ThreadPool threadPool) {
+        super(metadata,
+                env.settings(),
+                getSetting(UfileClientSettings.COMPRESS, metadata),
+                namedXContentRegistry,
+                threadPool);
         this.settings = env.settings();
         this.service = service;
         this.bucket = getSetting(UfileClientSettings.BUCKET, metadata);
