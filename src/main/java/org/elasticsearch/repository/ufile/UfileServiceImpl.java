@@ -12,8 +12,8 @@ import cn.ucloud.ufile.UfileClient;
 import cn.ucloud.ufile.bean.*;
 import cn.ucloud.ufile.util.FileUtil;
 import com.google.gson.Gson;
+import org.apache.logging.log4j.Logger;
 import org.elasticsearch.cluster.metadata.RepositoryMetaData;
-import org.elasticsearch.common.component.AbstractComponent;
 import org.elasticsearch.common.settings.Settings;
 
 import java.io.IOException;
@@ -22,7 +22,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class UfileServiceImpl extends AbstractComponent implements UfileService {
+import org.apache.logging.log4j.LogManager;
+
+
+public class UfileServiceImpl implements UfileService {
+    private static final Logger logger = LogManager.getLogger(UfileServiceImpl.class);
+
     private ObjectApiBuilder client;
 
     public UfileServiceImpl(Settings settings, RepositoryMetaData metaData) {

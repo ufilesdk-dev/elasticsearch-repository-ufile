@@ -5,18 +5,19 @@ import cn.ucloud.ufile.bean.ObjectListBean;
 import cn.ucloud.ufile.exception.UfileClientException;
 import cn.ucloud.ufile.exception.UfileServerException;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.elasticsearch.common.blobstore.*;
 import org.elasticsearch.common.blobstore.support.PlainBlobMetaData;
 import org.elasticsearch.common.collect.MapBuilder;
-import org.elasticsearch.common.component.AbstractComponent;
 import org.elasticsearch.common.settings.Settings;
 
 import java.io.*;
 import java.util.*;
 
 
-public class UfileBlobStore extends AbstractComponent implements BlobStore {
-
+public class UfileBlobStore implements BlobStore {
+    private final Logger logger = LogManager.getLogger(UfileBlobStore.class);
     private final UfileService client;
     private final String bucket;
 

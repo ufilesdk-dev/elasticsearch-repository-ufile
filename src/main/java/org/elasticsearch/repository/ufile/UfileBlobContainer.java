@@ -1,12 +1,10 @@
 package org.elasticsearch.repository.ufile;
 
 import org.apache.commons.lang.StringUtils;
-//import org.apache.logging.log4j.Logger;
 import org.elasticsearch.common.blobstore.BlobMetaData;
 import org.elasticsearch.common.blobstore.BlobPath;
 import org.elasticsearch.common.blobstore.BlobStoreException;
 import org.elasticsearch.common.blobstore.support.AbstractBlobContainer;
-//import org.elasticsearch.common.logging.Loggers;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
@@ -69,6 +67,11 @@ public class UfileBlobContainer extends AbstractBlobContainer {
         blobStore.writeBlob(buildKey(blobName), inputStream, blobSize);
     }
 
+    @Override
+    public void writeBlobAtomic(String blobName, InputStream inputStream, long blobSize, boolean failIfAlreadyExists) throws IOException {
+        logger.debug("writeBlobAtomic({}, stream, {})", blobName, blobSize);
+        writeBlob(blobName, inputStream, blobSize, failIfAlreadyExists);
+    }
 
     /**
      * Deletes a blob with giving name, if the blob exists.  If the blob does not exist, this method throws an IOException.
@@ -83,6 +86,13 @@ public class UfileBlobContainer extends AbstractBlobContainer {
         if (!blobExists(blobName)) {
             throw new NoSuchFileException("Blob [" + blobName + "] does not exist");
         }
+        deleteBlobIgnoringIfNotExists(blobName);
+    }
+
+
+    @Override
+    public void deleteBlobIgnoringIfNotExists(String blobName) throws IOException {
+        logger.debug("deleteBlobIgnoringIfNotExists({})", blobName);
         try {
             blobStore.deleteBlob(buildKey(blobName));
         } catch (Exception e) {
@@ -90,7 +100,6 @@ public class UfileBlobContainer extends AbstractBlobContainer {
                     e.getMessage());
             throw new IOException(e);
         }
-
     }
 
     /**

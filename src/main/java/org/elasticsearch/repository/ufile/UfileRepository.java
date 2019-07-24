@@ -22,6 +22,7 @@ public class UfileRepository extends BlobStoreRepository {
     private static final Logger logger = LogManager.getLogger(UfileRepository.class);
     private static final DeprecationLogger deprecationLogger = new DeprecationLogger(logger);
 
+
     public static final String TYPE = "ufile";
     private final BlobPath basePath;
     private final boolean compress;
@@ -33,7 +34,7 @@ public class UfileRepository extends BlobStoreRepository {
 
     public UfileRepository(RepositoryMetaData metadata, Environment env,
                            NamedXContentRegistry namedXContentRegistry, UfileService service) {
-        super(metadata, env.settings(), namedXContentRegistry);
+        super(metadata, env.settings(), getSetting(UfileClientSettings.COMPRESS, metadata), namedXContentRegistry);
         this.settings = env.settings();
         this.service = service;
         this.bucket = getSetting(UfileClientSettings.BUCKET, metadata);
@@ -73,10 +74,6 @@ public class UfileRepository extends BlobStoreRepository {
         return basePath;
     }
 
-    @Override
-    protected boolean isCompress() {
-        return compress;
-    }
 
     @Override
     protected ByteSizeValue chunkSize() {
