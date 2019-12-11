@@ -6,7 +6,7 @@
 
 #### 本地安装
 
-1. 下载`elasticsearch-repository-ufile-X.X.X.zip`。`X.X.X`为对应的elasticsearch版本号。[下载地址]: https://github.com/ufilesdk-dev/elasticsearch-repository-ufile/releases
+1. 下载`elasticsearch-repository-ufile-X.X.X.zip`。`X.X.X`为对应的elasticsearch版本号。[下载地址](https://github.com/ufilesdk-dev/elasticsearch-repository-ufile/releases)
 2. `./<ES_HOME>/bin/elasticsearch-plugin install file:///<DOWNLOAD_PATH>/elasticsearch-repository-ufile-X.X.X.zip`
 3. 安装插件时提示授权，输入`y`确认。
 
