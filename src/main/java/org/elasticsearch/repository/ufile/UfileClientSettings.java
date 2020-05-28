@@ -29,4 +29,7 @@ public class UfileClientSettings {
     public static final Setting<ByteSizeValue> CHUNK_SIZE =
             byteSizeSetting("chunk_size", MAX_CHUNK_SIZE, MIN_CHUNK_SIZE, MAX_CHUNK_SIZE,
                     Property.NodeScope, Property.Dynamic);
+    public static final int TRY_DELAY_BASE_TIME = 500;
+
+    public static final int DEFAULT_MAX_TYRTIMES = 3;
 }

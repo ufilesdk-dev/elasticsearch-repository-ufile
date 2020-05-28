@@ -126,8 +126,22 @@ public class UfileServiceImpl implements UfileService {
         long mputThreshold = 10 << 10 << 10; //10m
         if (blobSize < mputThreshold) {
             //用put
-            this.client.putObject(input, mimeType).nameAs(key).toBucket(bucketName).execute();
-            return;
+            int tryCount = 1;
+            while (true) {
+                try {
+                    this.client.putObject(input, mimeType).nameAs(key).toBucket(bucketName).execute();
+                    return;
+                } catch (UfileServerException e) {
+                    logger.error("put fail, retry times {}. Exception info {}", tryCount, e.getMessage());
+                    if (tryCount > UfileClientSettings.DEFAULT_MAX_TYRTIMES) { throw  e; }
+                    try {
+                        Thread.sleep(tryCount * UfileClientSettings.TRY_DELAY_BASE_TIME);
+                    } catch (InterruptedException se) {
+                        logger.error("sleep error {}", se.getMessage());
+                    }
+                    tryCount++;
+                }
+            }
         } else {
             //用mput
             // 先初始化分片上环请求
@@ -146,7 +160,23 @@ public class UfileServiceImpl implements UfileService {
             } else {
                 //成功
                 logger.debug("UfileServiceImpl.finishMultiUpload");
-                this.client.finishMultiUpload(upload_info, partStates).execute();
+                int tryCount = 1;
+                while (true) {
+                    try {
+                        this.client.finishMultiUpload(upload_info, partStates).execute();
+                    } catch (UfileServerException e) {
+                        logger.error("finish fail, retry times {}. Exception info {}", tryCount, e.getMessage());
+                        if (tryCount > UfileClientSettings.DEFAULT_MAX_TYRTIMES) {
+                            throw e;
+                        }
+                        try {
+                            Thread.sleep(tryCount * UfileClientSettings.TRY_DELAY_BASE_TIME);
+                        } catch (InterruptedException se) {
+                            logger.error("sleep error {}", se.getMessage());
+                        }
+                        tryCount++;
+                    }
+                }
             }
             return;
         }
