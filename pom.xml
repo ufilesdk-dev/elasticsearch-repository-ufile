@@ -6,11 +6,11 @@
 
     <groupId>com.opensearch.es</groupId>
     <artifactId>elasticsearch-repository-ufile</artifactId>
-    <version>6.6.0</version>
+    <version>6.8.4</version>
 
 
     <properties>
-        <elasticsearch.version>6.6.0</elasticsearch.version>
+        <elasticsearch.version>6.8.4</elasticsearch.version>
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.description>elasticsearch-repository-ufile</project.description>
         <elasticsearch.assembly.descriptor>${project.basedir}/src/main/assemblies/plugin.xml
