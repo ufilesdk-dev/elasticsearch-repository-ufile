@@ -159,6 +159,7 @@ public class UfileServiceImpl extends AbstractComponent implements UfileService 
                 while (true) {
                     try {
                         this.client.finishMultiUpload(upload_info, partStates).execute();
+                        break;
                     } catch (UfileServerException e) {
                         logger.error("finish fail, retry times {}. Exception info {}", tryCount, e.getMessage());
                         if (tryCount > UfileClientSettings.DEFAULT_MAX_TYRTIMES) {
